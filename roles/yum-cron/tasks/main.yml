@@ -1,0 +1,19 @@
+- name: yum-cron
+  yum:
+    name: yum-cron
+    state: present
+
+- name: /etc/yum/yum-cron.conf
+  ini_file:
+    path: /etc/yum/yum-cron.conf
+    section: commands
+    option: apply_updates
+    value: "yes"
+  notify:
+    - restart yum-cron
+
+- name: start yum-cron on boot
+  service:
+    name: yum-cron
+    enabled: yes
+    state: started

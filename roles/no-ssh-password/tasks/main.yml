@@ -1,0 +1,16 @@
+- name: Disable SSH password authentication
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^\s*#?\s*PasswordAuthentication\s+'
+    line: "PasswordAuthentication no"
+    state: present
+  notify:
+    - reload sshd
+
+- name: Remove any extra "PasswordAuthentication" lines from sshd config
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^\s*PasswordAuthentication\s+(?!no)'
+    state: absent
+  notify:
+    - reload sshd

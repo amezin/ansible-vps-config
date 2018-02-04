@@ -1,0 +1,20 @@
+- name: /etc/ddclient.conf
+  template:
+    src: ddclient.conf
+    dest: /etc/ddclient.conf
+    owner: ddclient
+    group: ddclient
+    mode: '0600'
+  notify:
+    - reload ddclient
+
+- name: ddclient package
+  package:
+    pkg: ddclient
+    state: present
+
+- name: start ddclient on boot
+  service:
+    name: ddclient
+    enabled: yes
+    state: started

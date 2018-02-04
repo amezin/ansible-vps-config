@@ -1,0 +1,17 @@
+- name: fail2ban
+  package:
+    name: fail2ban
+    state: present
+
+- name: /etc/fail2ban/jail.local
+  template:
+    src: jail.local
+    dest: /etc/fail2ban/jail.local
+  notify:
+    - reload fail2ban
+
+- name: start fail2ban on boot
+  service:
+    name: fail2ban
+    enabled: yes
+    state: started

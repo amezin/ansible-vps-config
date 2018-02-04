@@ -1,0 +1,4 @@
+- name: EPEL repo
+  package:
+    name: epel-release
+    state: present

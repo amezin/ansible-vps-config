@@ -1,0 +1,18 @@
+- name: Set hostname
+  hostname:
+    name: "{{ hostname }}"
+
+- name: Update /etc/hosts
+  blockinfile:
+    dest: /etc/hosts
+    block: |
+      {{ ansible_lo.ipv4.address }} {{ fqdn }} {{ hostname }}
+      {{ ansible_lo.ipv6[0].address }} {{ fqdn }} {{ hostname }}
+    insertbefore: BOF
+    state: present
+  notify:
+    - restart systemd-logind
+
+- name: Re-gather facts
+  action: setup
+  when: ansible_fqdn != fqdn

@@ -1,0 +1,15 @@
+- name: Docker yum repo
+  get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: /etc/yum.repos.d/docker-ce.repo
+
+- name: Docker package
+  package:
+    pkg: docker-ce
+    state: present
+
+- name: start docker on boot
+  service:
+    name: docker
+    enabled: yes
+    state: started

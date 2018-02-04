@@ -1,0 +1,4 @@
+- name: reload ddclient
+  service:
+    name: ddclient
+    state: reloaded
