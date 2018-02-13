@@ -1,4 +1,4 @@
-- name: reload ddclient
+- name: restart ddclient
   service:
     name: ddclient
-    state: reloaded
+    state: restarted
