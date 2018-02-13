@@ -4,6 +4,7 @@
   roles:
     - no-ssh-password
     - hostname-fqdn
+    - update-all
     - docker
     - ddclient
     - fail2ban
