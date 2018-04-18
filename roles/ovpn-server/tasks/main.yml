@@ -1,0 +1,158 @@
+- name: Install openvpn
+  package:
+    name: openvpn
+    state: present
+
+- name: Install easy-rsa
+  package:
+    name: easy-rsa
+    state: present
+
+- name: "{{ easyrsa_dir }}"
+  file:
+    path: "{{ easyrsa_dir }}"
+    state: directory
+
+- name: easy-rsa init-pki
+  shell: "{{ easyrsa_cmd }} init-pki"
+  args:
+    chdir: "{{ easyrsa_dir }}"
+    creates: "{{ easyrsa_pki_dir }}"
+
+- name: easy-rsa build-ca
+  shell: "{{ easyrsa_cmd }} --batch build-ca nopass"
+  args:
+    chdir: "{{ easyrsa_dir }}"
+    creates: "{{ easyrsa_ca_crt }}"
+  notify:
+    - restart openvpn server
+
+- name: easy-rsa build-server-full
+  shell: "{{ easyrsa_cmd }} --batch build-server-full server nopass"
+  args:
+    chdir: "{{ easyrsa_dir }}"
+    creates: "{{ easyrsa_server_key }}"
+  notify:
+    - restart openvpn server
+
+- name: easy-rsa gen-dh
+  shell: "{{ easyrsa_cmd }} --batch gen-dh"
+  args:
+    chdir: "{{ easyrsa_dir }}"
+    creates: "{{ easyrsa_dh_pem }}"
+  notify:
+    - restart openvpn server
+
+- name: openvpn TLS key
+  shell: "openvpn --genkey --secret {{ openvpn_tls_key }}"
+  args:
+    creates: "{{ openvpn_tls_key }}"
+
+- name: /etc/openvpn/server.conf
+  template:
+    src: server.conf
+    dest: /etc/openvpn/server.conf
+  notify:
+    - restart openvpn server
+
+- name: move openvpn interface to firewalld zone
+  firewalld:
+    interface: "{{ openvpn_dev }}"
+    state: enabled
+    permanent: true
+    immediate: true
+    zone: "{{ openvpn_firewalld_dev_zone }}"
+
+- name: enable openvpn in firewalld (public)
+  firewalld:
+    service: openvpn
+    state: enabled
+    permanent: true
+    immediate: true
+    zone: "{{ openvpn_firewalld_public_zone }}"
+
+- name: enable openvpn in firewalld
+  firewalld:
+    service: openvpn
+    state: enabled
+    permanent: true
+    immediate: true
+    zone: "{{ openvpn_firewalld_dev_zone }}"
+
+- name: add firewalld masquerade rule
+  firewalld:
+    rich_rule: 'rule family=ipv4 source address=10.8.0.0/24 masquerade'
+    state: enabled
+    permanent: true
+    immediate: true
+    zone: "{{ openvpn_firewalld_public_zone }}"
+
+- name: enable IPv4 forwarding
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+- name: start openvpn server
+  service:
+    name: openvpn@server
+    enabled: yes
+    state: started
+
+- name: easy-rsa build-client-full
+  shell: "{{ easyrsa_cmd }} --batch build-client-full client nopass"
+  args:
+    chdir: "{{ easyrsa_dir }}"
+    creates: "{{ easyrsa_client_key }}"
+
+- name: openvpn client config dir
+  file:
+    path: "{{ openvpn_client_config_dir }}"
+    state: directory
+
+- name: client.ovpn
+  template:
+    src: client.ovpn
+    dest: "{{ openvpn_client_config }}"
+
+- name: "copy {{ easyrsa_ca_crt }}"
+  copy:
+    src: "{{ easyrsa_ca_crt }}"
+    remote_src: true
+    dest: "{{ openvpn_client_config_dir }}"
+
+- name: "copy {{ easyrsa_client_key }}"
+  copy:
+    src: "{{ easyrsa_client_key }}"
+    remote_src: true
+    dest: "{{ openvpn_client_config_dir }}"
+
+- name: "copy {{ easyrsa_client_crt }}"
+  copy:
+    src: "{{ easyrsa_client_crt }}"
+    remote_src: true
+    dest: "{{ openvpn_client_config_dir }}"
+
+- name: "copy {{ openvpn_tls_key }}"
+  copy:
+    src: "{{ openvpn_tls_key }}"
+    remote_src: true
+    dest: "{{ openvpn_client_config_dir }}"
+
+- name: openvpn client config archive
+  archive:
+    dest: "{{ openvpn_client_config_zip }}"
+    format: zip
+    path:
+      - "{{ openvpn_client_config_dir }}/{{ easyrsa_ca_crt | basename }}"
+      - "{{ openvpn_client_config_dir }}/{{ easyrsa_client_key | basename }}"
+      - "{{ openvpn_client_config_dir }}/{{ easyrsa_client_crt | basename }}"
+      - "{{ openvpn_client_config_dir }}/{{ openvpn_tls_key | basename }}"
+      - "{{ openvpn_client_config_dir }}/{{ openvpn_client_config | basename }}"
+
+- name: fetch client config
+  fetch:
+    src: "{{ openvpn_client_config_zip }}"
+    dest: "./downloads"

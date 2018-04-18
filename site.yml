@@ -9,6 +9,7 @@
     - ddclient
     - fail2ban
     - yum-cron
+    - ovpn-server
   vars:
     namecheap_ddns_password: !vault |
               $ANSIBLE_VAULT;1.1;AES256

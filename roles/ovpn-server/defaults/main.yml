@@ -1,0 +1,7 @@
+easyrsa_cmd: "/usr/share/easy-rsa/3/easyrsa"
+easyrsa_dir: "/etc/easy-rsa"
+openvpn_dev: "tun0"
+openvpn_firewalld_dev_zone: "trusted"
+openvpn_firewalld_public_zone: "public"
+openvpn_tls_key: "/etc/openvpn/myvpn.tlsauth"
+openvpn_client_config_dir: "/openvpn-client-config"
