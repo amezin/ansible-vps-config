@@ -107,52 +107,32 @@
     chdir: "{{ easyrsa_dir }}"
     creates: "{{ easyrsa_client_key }}"
 
-- name: openvpn client config dir
-  file:
-    path: "{{ openvpn_client_config_dir }}"
-    state: directory
+- name: "read {{ easyrsa_ca_crt }}"
+  slurp:
+    src: "{{ easyrsa_ca_crt }}"
+  register: easyrsa_ca_crt_slurp
+
+- name: "read {{ easyrsa_client_key }}"
+  slurp:
+    src: "{{ easyrsa_client_key }}"
+  register: easyrsa_client_key_slurp
+
+- name: "read {{ easyrsa_client_crt }}"
+  slurp:
+    src: "{{ easyrsa_client_crt }}"
+  register: easyrsa_client_crt_slurp
+
+- name: "read {{ openvpn_tls_key }}"
+  slurp:
+    src: "{{ openvpn_tls_key }}"
+  register: openvpn_tls_key_slurp
 
 - name: client.ovpn
   template:
     src: client.ovpn
     dest: "{{ openvpn_client_config }}"
 
-- name: "copy {{ easyrsa_ca_crt }}"
-  copy:
-    src: "{{ easyrsa_ca_crt }}"
-    remote_src: true
-    dest: "{{ openvpn_client_config_dir }}"
-
-- name: "copy {{ easyrsa_client_key }}"
-  copy:
-    src: "{{ easyrsa_client_key }}"
-    remote_src: true
-    dest: "{{ openvpn_client_config_dir }}"
-
-- name: "copy {{ easyrsa_client_crt }}"
-  copy:
-    src: "{{ easyrsa_client_crt }}"
-    remote_src: true
-    dest: "{{ openvpn_client_config_dir }}"
-
-- name: "copy {{ openvpn_tls_key }}"
-  copy:
-    src: "{{ openvpn_tls_key }}"
-    remote_src: true
-    dest: "{{ openvpn_client_config_dir }}"
-
-- name: openvpn client config archive
-  archive:
-    dest: "{{ openvpn_client_config_zip }}"
-    format: zip
-    path:
-      - "{{ openvpn_client_config_dir }}/{{ easyrsa_ca_crt | basename }}"
-      - "{{ openvpn_client_config_dir }}/{{ easyrsa_client_key | basename }}"
-      - "{{ openvpn_client_config_dir }}/{{ easyrsa_client_crt | basename }}"
-      - "{{ openvpn_client_config_dir }}/{{ openvpn_tls_key | basename }}"
-      - "{{ openvpn_client_config_dir }}/{{ openvpn_client_config | basename }}"
-
 - name: fetch client config
   fetch:
-    src: "{{ openvpn_client_config_zip }}"
+    src: "{{ openvpn_client_config }}"
     dest: "./downloads"
