@@ -4,3 +4,4 @@ openvpn_dev: "tun0"
 openvpn_firewalld_dev_zone: "trusted"
 openvpn_firewalld_public_zone: "public"
 openvpn_tls_key: "/etc/openvpn/myvpn.tlsauth"
+openvpn_port: 1194
