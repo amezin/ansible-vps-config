@@ -55,6 +55,12 @@
   notify:
     - restart openvpn server
 
+- name: ensure firewalld is enabled and running
+  service:
+    name: firewalld
+    enabled: yes
+    state: started
+
 - name: move openvpn interface to firewalld zone
   firewalld:
     interface: "{{ openvpn_dev }}"
