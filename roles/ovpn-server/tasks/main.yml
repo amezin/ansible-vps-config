@@ -93,9 +93,25 @@
     immediate: true
     zone: "{{ openvpn_firewalld_public_zone }}"
 
+- name: add firewalld masquerade rule (IPv6)
+  firewalld:
+    rich_rule: 'rule family=ipv6 source address=fd7f:b3cd:8000:bc09::/64 masquerade'
+    state: enabled
+    permanent: true
+    immediate: true
+    zone: "{{ openvpn_firewalld_public_zone }}"
+
 - name: enable IPv4 forwarding
   sysctl:
     name: net.ipv4.ip_forward
+    value: 1
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+- name: enable IPv6 forwarding
+  sysctl:
+    name: net.ipv6.conf.all.forwarding
     value: 1
     sysctl_set: yes
     state: present
