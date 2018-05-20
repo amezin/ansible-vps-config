@@ -7,7 +7,6 @@
 -A INPUT -i lo -j ACCEPT
 -A INPUT -i {{ openvpn_dev }} -j ACCEPT
 # Fail2ban from EPEL doesn't yet support ipv6 - block ssh over ipv6: -A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT
--A INPUT -d fe80::/64 -p udp -m udp --dport 546 -m state --state NEW -j ACCEPT
 -A FORWARD -i {{ openvpn_dev }} -j ACCEPT
 -A FORWARD -o {{ openvpn_dev }} -m state --state RELATED,ESTABLISHED -j ACCEPT
 COMMIT
