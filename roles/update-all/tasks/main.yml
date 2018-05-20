@@ -1,4 +1,27 @@
-- name: Update all packages
+- name: "Update all packages"
   package:
     name: '*'
     state: latest
+
+- name: "Check if reboot is required"
+  command: needs-restarting -r
+  register: reboot_required
+  changed_when: reboot_required.rc != 0
+
+- name: "Check if services need to be restarted"
+  command: needs-restarting -s
+  register: services_need_restarting
+  changed_when: services_need_restarting.stdout != ""
+
+- name: "Reboot if required"
+  shell: sleep 5 && shutdown -r now "Ansible updates triggered"
+  async: 1
+  poll: 0
+  when: (reboot_required.rc != 0) or (services_need_restarting.stdout != "")
+
+- name: "Wait for host to become active"
+  wait_for_connection:
+    connect_timeout: 20
+    sleep: 5
+    delay: 5
+    timeout: 60

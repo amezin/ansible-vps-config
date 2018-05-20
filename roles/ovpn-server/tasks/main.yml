@@ -1,9 +1,14 @@
-- name: Install openvpn
+- name: "EPEL repo"
+  package:
+    name: epel-release
+    state: present
+
+- name: "Install openvpn"
   package:
     name: openvpn
     state: present
 
-- name: Install easy-rsa
+- name: "Install easy-rsa"
   package:
     name: easy-rsa
     state: present
@@ -13,13 +18,13 @@
     path: "{{ easyrsa_dir }}"
     state: directory
 
-- name: easy-rsa init-pki
+- name: "easy-rsa init-pki"
   shell: "{{ easyrsa_cmd }} init-pki"
   args:
     chdir: "{{ easyrsa_dir }}"
     creates: "{{ easyrsa_pki_dir }}"
 
-- name: easy-rsa build-ca
+- name: "easy-rsa build-ca"
   shell: "{{ easyrsa_cmd }} --batch build-ca nopass"
   args:
     chdir: "{{ easyrsa_dir }}"
@@ -27,7 +32,7 @@
   notify:
     - restart openvpn server
 
-- name: easy-rsa build-server-full
+- name: "easy-rsa build-server-full"
   shell: "{{ easyrsa_cmd }} --batch build-server-full server nopass"
   args:
     chdir: "{{ easyrsa_dir }}"
@@ -35,7 +40,7 @@
   notify:
     - restart openvpn server
 
-- name: easy-rsa gen-dh
+- name: "easy-rsa gen-dh"
   shell: "{{ easyrsa_cmd }} --batch gen-dh"
   args:
     chdir: "{{ easyrsa_dir }}"
@@ -43,25 +48,27 @@
   notify:
     - restart openvpn server
 
-- name: openvpn TLS key
+- name: "{{ openvpn_tls_key }}"
   shell: "openvpn --genkey --secret {{ openvpn_tls_key }}"
   args:
     creates: "{{ openvpn_tls_key }}"
+  notify:
+    - restart openvpn server
 
-- name: /etc/openvpn/server.conf
+- name: "/etc/openvpn/server.conf"
   template:
     src: server.conf
     dest: /etc/openvpn/server.conf
   notify:
     - restart openvpn server
 
-- name: ensure firewalld is enabled and running
+- name: "ensure firewalld is enabled and running"
   service:
     name: firewalld
     enabled: yes
     state: started
 
-- name: move openvpn interface to firewalld zone
+- name: "move openvpn interface {{ openvpn_dev }} to {{ openvpn_firewalld_dev_zone }} firewalld zone"
   firewalld:
     interface: "{{ openvpn_dev }}"
     state: enabled
@@ -77,7 +84,7 @@
     immediate: true
     zone: "{{ openvpn_firewalld_public_zone }}"
 
-- name: enable openvpn in firewalld (public)
+- name: "enable openvpn in firewalld ({{ openvpn_firewalld_public_zone }})"
   firewalld:
     service: openvpn
     state: enabled
@@ -85,7 +92,7 @@
     immediate: true
     zone: "{{ openvpn_firewalld_public_zone }}"
 
-- name: enable openvpn in firewalld
+- name: "enable openvpn in firewalld {{ openvpn_firewalld_dev_zone }}"
   firewalld:
     service: openvpn
     state: enabled
@@ -93,13 +100,13 @@
     immediate: true
     zone: "{{ openvpn_firewalld_dev_zone }}"
 
-- name: start openvpn server
+- name: "start openvpn server"
   service:
     name: openvpn@server
     enabled: yes
     state: started
 
-- name: easy-rsa build-client-full
+- name: "easy-rsa build-client-full"
   shell: "{{ easyrsa_cmd }} --batch build-client-full client nopass"
   args:
     chdir: "{{ easyrsa_dir }}"
@@ -125,12 +132,12 @@
     src: "{{ openvpn_tls_key }}"
   register: openvpn_tls_key_slurp
 
-- name: client.ovpn
+- name: "{{ openvpn_client_config }}"
   template:
     src: client.ovpn
     dest: "{{ openvpn_client_config }}"
 
-- name: fetch client config
+- name: "download {{ openvpn_client_config }}"
   fetch:
     src: "{{ openvpn_client_config }}"
     dest: "./downloads"
