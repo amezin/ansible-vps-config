@@ -3,12 +3,12 @@
     name: openvpn@server
     state: restarted
 
-- name: reload iptables
+- name: "reload iptables"
   service:
-    name: iptables
+    name: "{{ iptables_service }}"
     state: reloaded
 
-- name: reload ip6tables
+- name: "reload ip6tables"
   service:
-    name: ip6tables
+    name: "{{ ip6tables_service }}"
     state: reloaded

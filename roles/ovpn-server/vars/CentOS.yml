@@ -1,0 +1,7 @@
+iptables_service_package: iptables-services
+iptables_service: iptables
+ip6tables_service: ip6tables
+iptables_file: /etc/sysconfig/iptables
+ip6tables_file: /etc/sysconfig/ip6tables
+easyrsa_cmd: "/usr/share/easy-rsa/3/easyrsa"
+easyrsa_dir: "/etc/easy-rsa"

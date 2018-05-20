@@ -1,0 +1,7 @@
+iptables_service_package: iptables-persistent
+iptables_service: netfilter-persistent
+ip6tables_service: netfilter-persistent
+iptables_file: /etc/iptables/rules.v4
+ip6tables_file: /etc/iptables/rules.v6
+easyrsa_dir: "/etc/easy-rsa"
+easyrsa_cmd: "{{ easyrsa_dir }}/EasyRSA-3.0.4/easyrsa"

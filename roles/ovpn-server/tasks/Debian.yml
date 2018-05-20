@@ -1,0 +1,15 @@
+- name: Add OpenVPN repo GPG key
+  apt_key:
+    id: E158C569
+    url: https://swupdate.openvpn.net/repos/repo-public.gpg
+
+- name: Add OpenVPN repo sources
+  apt_repository:
+    filename: openvpn
+    repo: deb http://build.openvpn.net/debian/openvpn/stable {{ ansible_lsb.codename }} main
+
+- name: Download easy-rsa
+  unarchive:
+    src: https://github.com/OpenVPN/easy-rsa/releases/download/v3.0.4/EasyRSA-3.0.4.tgz
+    remote_src: yes
+    dest: "{{ easyrsa_dir }}"

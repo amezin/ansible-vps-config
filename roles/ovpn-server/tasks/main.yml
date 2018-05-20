@@ -1,26 +1,26 @@
-- name: "EPEL repo"
-  package:
-    name: epel-release
-    state: present
+- include_vars: "{{ ansible_distribution }}.yml"
+- include: "{{ ansible_distribution }}.yml"
 
 - name: "Install openvpn"
   package:
     name: openvpn
-    state: present
+    state: latest
 
-- name: "Install easy-rsa"
+- name: "Install {{ iptables_service_package }}"
   package:
-    name: easy-rsa
-    state: present
+    name: "{{ iptables_service_package }}"
+    state: latest
 
-- name: "Install iptables-services"
-  package:
-    name: iptables-services
-    state: present
+- name: "{{ iptables_file }}"
+  template:
+    src: iptables
+    dest: "{{ iptables_file }}"
+  notify:
+    - reload iptables
 
-- name: "Enable iptables service"
+- name: "Enable {{ iptables_service }} service"
   service:
-    name: iptables
+    name: "{{ iptables_service }}"
     enabled: yes
     state: started
 
@@ -31,12 +31,18 @@
     state: present
     sysctl_set: yes
 
-- name: "/etc/sysconfig/iptables"
+- name: "{{ ip6tables_file }}"
   template:
-    src: iptables
-    dest: /etc/sysconfig/iptables
+    src: ip6tables
+    dest: "{{ ip6tables_file }}"
   notify:
-    - reload iptables
+    - reload ip6tables
+
+- name: "Enable {{ ip6tables_service }} service"
+  service:
+    name: "{{ ip6tables_service }}"
+    enabled: yes
+    state: started
 
 - name: "sysctl net.ipv6.conf.all.forwarding=1"
   sysctl:
@@ -44,13 +50,6 @@
     value: 1
     state: present
     sysctl_set: yes
-
-- name: "/etc/sysconfig/ip6tables"
-  template:
-    src: ip6tables
-    dest: /etc/sysconfig/ip6tables
-  notify:
-    - reload ip6tables
 
 - name: "{{ easyrsa_dir }}"
   file:
