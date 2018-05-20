@@ -52,6 +52,12 @@
   notify:
     - reload ip6tables
 
+- name: "Enable ip6tables service"
+  service:
+    name: iptables
+    enabled: yes
+    state: started
+
 - name: "{{ easyrsa_dir }}"
   file:
     path: "{{ easyrsa_dir }}"
