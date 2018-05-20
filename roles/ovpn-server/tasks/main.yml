@@ -13,6 +13,45 @@
     name: easy-rsa
     state: present
 
+- name: "Install iptables-services"
+  package:
+    name: iptables-services
+    state: present
+
+- name: "Enable iptables service"
+  service:
+    name: iptables
+    enabled: yes
+    state: started
+
+- name: "sysctl net.ipv4.ip_forward=1"
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+    state: present
+    sysctl_set: yes
+
+- name: "/etc/sysconfig/iptables"
+  template:
+    src: iptables
+    dest: /etc/sysconfig/iptables
+  notify:
+    - reload iptables
+
+- name: "sysctl net.ipv6.conf.all.forwarding=1"
+  sysctl:
+    name: net.ipv6.conf.all.forwarding
+    value: 1
+    state: present
+    sysctl_set: yes
+
+- name: "/etc/sysconfig/ip6tables"
+  template:
+    src: ip6tables
+    dest: /etc/sysconfig/ip6tables
+  notify:
+    - reload ip6tables
+
 - name: "{{ easyrsa_dir }}"
   file:
     path: "{{ easyrsa_dir }}"
@@ -61,44 +100,6 @@
     dest: /etc/openvpn/server.conf
   notify:
     - restart openvpn server
-
-- name: "ensure firewalld is enabled and running"
-  service:
-    name: firewalld
-    enabled: yes
-    state: started
-
-- name: "move openvpn interface {{ openvpn_dev }} to {{ openvpn_firewalld_dev_zone }} firewalld zone"
-  firewalld:
-    interface: "{{ openvpn_dev }}"
-    state: enabled
-    permanent: true
-    immediate: true
-    zone: "{{ openvpn_firewalld_dev_zone }}"
-
-- name: "move {{ openvpn_public_interface }} interface to {{ openvpn_firewalld_public_zone }} firewalld zone"
-  firewalld:
-    interface: "{{ openvpn_public_interface }}"
-    state: enabled
-    permanent: true
-    immediate: true
-    zone: "{{ openvpn_firewalld_public_zone }}"
-
-- name: "enable openvpn in firewalld ({{ openvpn_firewalld_public_zone }})"
-  firewalld:
-    service: openvpn
-    state: enabled
-    permanent: true
-    immediate: true
-    zone: "{{ openvpn_firewalld_public_zone }}"
-
-- name: "enable openvpn in firewalld {{ openvpn_firewalld_dev_zone }}"
-  firewalld:
-    service: openvpn
-    state: enabled
-    permanent: true
-    immediate: true
-    zone: "{{ openvpn_firewalld_dev_zone }}"
 
 - name: "start openvpn server"
   service:

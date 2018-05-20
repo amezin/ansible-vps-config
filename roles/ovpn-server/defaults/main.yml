@@ -1,7 +1,7 @@
 easyrsa_cmd: "/usr/share/easy-rsa/3/easyrsa"
 easyrsa_dir: "/etc/easy-rsa"
 openvpn_dev: "tun0"
-openvpn_firewalld_dev_zone: "internal"
-openvpn_firewalld_public_zone: "external"
 openvpn_tls_key: "/etc/openvpn/myvpn.tlsauth"
-openvpn_port: 1194
+openvpn_port: 8000
+openvpn_cipher: "AES-128-GCM"
+openvpn_ipv4_subnet: "10.8.0.0/24"

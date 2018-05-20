@@ -3,9 +3,14 @@
     name: epel-release
     state: present
 
-- name: fail2ban
+- name: fail2ban-server
   package:
-    name: fail2ban
+    name: fail2ban-server
+    state: present
+
+- name: fail2ban-systemd
+  package:
+    name: fail2ban-systemd
     state: present
 
 - name: /etc/fail2ban/jail.local
