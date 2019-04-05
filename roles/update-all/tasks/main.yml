@@ -2,26 +2,34 @@
   package:
     name: '*'
     state: latest
+  register: updated
 
 - name: "Check if reboot is required"
+  when: updated.changed
   command: needs-restarting -r
   register: reboot_required
-  changed_when: reboot_required.rc != 0
-
-- name: "Check if services need to be restarted"
-  command: needs-restarting -s
-  register: services_need_restarting
-  changed_when: services_need_restarting.stdout != ""
+  changed_when: reboot_required.rc == 1
+  failed_when: reboot_required.rc != 0 and reboot_required.rc != 1
 
 - name: "Reboot if required"
   shell: sleep 5 && shutdown -r now "Ansible updates triggered"
   async: 1
   poll: 0
-  when: (reboot_required.rc != 0) or (services_need_restarting.stdout != "")
+  when: reboot_required.changed
 
 - name: "Wait for host to become active"
-  wait_for_connection:
-    connect_timeout: 20
-    sleep: 5
-    delay: 5
-    timeout: 60
+  when: reboot_required.changed
+  wait_for_connection: {}
+
+- name: "Check if services need to be restarted"
+  when: updated.changed
+  command: needs-restarting -s
+  register: services_need_restarting
+  changed_when: services_need_restarting.stdout != ""
+
+- name: "Restart updated services"
+  when: services_need_restarting.changed
+  service:
+    name: "{{ item }}"
+    state: restarted
+  loop: "{{ services_need_restarting.stdout_lines }}"
