@@ -58,6 +58,13 @@
     enabled: yes
     state: started
 
+- name: "Disable firewalld"
+  service:
+    name: firewalld
+    enabled: false
+    state: stopped
+  ignore_errors: yes
+
 - name: "{{ easyrsa_dir }}"
   file:
     path: "{{ easyrsa_dir }}"
