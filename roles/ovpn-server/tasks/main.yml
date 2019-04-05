@@ -65,6 +65,23 @@
     state: stopped
   ignore_errors: yes
 
+- name: "Install selinux management packages"
+  when: ansible_selinux and ansible_selinux.status == 'enabled'
+  package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - libselinux-python
+    - policycoreutils-python
+
+- name: "Allow openvpn port {{ openvpn_port }} in selinux"
+  when: ansible_selinux and ansible_selinux.status == 'enabled'
+  seport:
+    setype: openvpn_port_t
+    ports: "{{ openvpn_port }}"
+    proto: udp
+    state: present
+
 - name: "{{ easyrsa_dir }}"
   file:
     path: "{{ easyrsa_dir }}"
