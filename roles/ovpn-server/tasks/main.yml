@@ -52,9 +52,9 @@
   notify:
     - reload ip6tables
 
-- name: "Enable ip6gtables service"
+- name: "Enable ip6tables service"
   service:
-    name: iptables
+    name: ip6tables
     enabled: yes
     state: started
 
