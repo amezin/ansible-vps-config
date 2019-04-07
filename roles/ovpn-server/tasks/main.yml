@@ -3,84 +3,20 @@
     name: epel-release
     state: present
 
-- name: "Install openvpn"
-  package:
-    name: openvpn
-    state: present
-
-- name: "Install easy-rsa"
-  package:
-    name: easy-rsa
-    state: present
-
-- name: "Install iptables-services"
-  package:
-    name: iptables-services
-    state: present
-
-- name: "sysctl net.ipv4.ip_forward=1"
-  sysctl:
-    name: net.ipv4.ip_forward
-    value: 1
-    state: present
-    sysctl_set: yes
-
-- name: "/etc/sysconfig/iptables"
-  template:
-    src: iptables
-    dest: /etc/sysconfig/iptables
-  notify:
-    - reload iptables
-
-- name: "Enable iptables service"
-  service:
-    name: iptables
-    enabled: yes
-    state: started
-
-- name: "sysctl net.ipv6.conf.all.forwarding=1"
-  sysctl:
-    name: net.ipv6.conf.all.forwarding
-    value: 1
-    state: present
-    sysctl_set: yes
-
-- name: "/etc/sysconfig/ip6tables"
-  template:
-    src: ip6tables
-    dest: /etc/sysconfig/ip6tables
-  notify:
-    - reload ip6tables
-
-- name: "Enable ip6tables service"
-  service:
-    name: ip6tables
-    enabled: yes
-    state: started
-
-- name: "Disable firewalld"
-  service:
-    name: firewalld
-    enabled: false
-    state: stopped
-  ignore_errors: yes
-
-- name: "Install selinux management packages"
-  when: ansible_selinux and ansible_selinux.status == 'enabled'
+- name: "Install openvpn and easy-rsa"
   package:
     name: "{{ item }}"
     state: present
   loop:
-    - libselinux-python
-    - policycoreutils-python
+    - openvpn
+    - easy-rsa
 
-- name: "Allow openvpn port {{ openvpn_port }} in selinux"
+- name: "Setup iptables"
+  import_tasks: iptables.yml
+
+- name: "Setup selinux"
   when: ansible_selinux and ansible_selinux.status == 'enabled'
-  seport:
-    setype: openvpn_port_t
-    ports: "{{ openvpn_port }}"
-    proto: udp
-    state: present
+  import_tasks: selinux.yml
 
 - name: "{{ easyrsa_dir }}"
   file:

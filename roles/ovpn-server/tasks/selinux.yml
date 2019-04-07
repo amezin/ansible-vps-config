@@ -1,0 +1,14 @@
+- name: "Install selinux management packages"
+  package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - libselinux-python
+    - policycoreutils-python
+
+- name: "Allow openvpn port {{ openvpn_port }} in selinux"
+  seport:
+    setype: openvpn_port_t
+    ports: "{{ openvpn_port }}"
+    proto: udp
+    state: present
