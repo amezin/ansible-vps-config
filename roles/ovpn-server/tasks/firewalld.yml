@@ -1,0 +1,72 @@
+- name: "Install firewalld"
+  package:
+    name: firewalld
+    state: present
+
+- name: "Disable ip[6]tables services"
+  service:
+    name: "{{ item }}"
+    enabled: no
+    state: stopped
+  ignore_errors: yes
+  loop:
+    - iptables
+    - ip6tables
+
+- name: "Enable firewalld"
+  service:
+    name: firewalld
+    enabled: true
+    state: started
+
+- name: "Move public interface to public zone"
+  firewalld:
+    interface: "{{ openvpn_public_interface }}"
+    zone: public
+    permanent: true
+    immediate: true
+    state: enabled
+
+- name: "Move openvpn interface to trusted zone"
+  firewalld:
+    interface: "{{ openvpn_dev }}"
+    zone: trusted
+    permanent: true
+    immediate: true
+    state: enabled
+
+- name: /etc/firewalld/services/openvpn.xml
+  template:
+    src: openvpn.xml
+    dest: /etc/firewalld/services/openvpn.xml
+
+- name: "Enable openvpn service in public zone"
+  firewalld:
+    service: openvpn
+    zone: public
+    permanent: true
+    immediate: true
+    state: enabled
+
+- name: "Ensure no global masquerade in public zone"
+  firewalld:
+    zone: public
+    masquerade: yes
+    permanent: true
+    immediate: true
+    state: disabled
+
+- name: "Masqerade for openvpn ipv4 subnet"
+  firewalld:
+    zone: public
+    permanent: true
+    immediate: true
+    state: enabled
+    rich_rule: 'rule family=ipv4 source address={{ openvpn_ipv4_subnet }} masquerade'
+
+- name: "sysctl net.ipv6.conf.all.forwarding=1"
+  sysctl:
+    name: net.ipv6.conf.all.forwarding
+    value: 1
+    state: present
+    sysctl_set: yes

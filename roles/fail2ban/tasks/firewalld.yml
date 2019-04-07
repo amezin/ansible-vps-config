@@ -1,0 +1,6 @@
+- name: fail2ban-firewalld
+  package:
+    name: fail2ban-firewalld
+    state: present
+  notify:
+    - reload fail2ban

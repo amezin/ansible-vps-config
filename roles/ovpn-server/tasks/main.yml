@@ -11,8 +11,8 @@
     - openvpn
     - easy-rsa
 
-- name: "Setup iptables"
-  import_tasks: iptables.yml
+- name: "Setup firewalld"
+  import_tasks: firewalld.yml
 
 - name: "Setup selinux"
   when: ansible_selinux and ansible_selinux.status == 'enabled'

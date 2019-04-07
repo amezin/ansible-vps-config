@@ -20,6 +20,9 @@
   notify:
     - reload fail2ban
 
+- name: firewalld
+  import_tasks: firewalld.yml
+
 - name: start fail2ban on boot
   service:
     name: fail2ban
