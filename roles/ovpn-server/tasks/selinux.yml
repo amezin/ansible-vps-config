@@ -10,5 +10,5 @@
   seport:
     setype: openvpn_port_t
     ports: "{{ openvpn_port }}"
-    proto: udp
+    proto: "{{ openvpn_proto }}"
     state: present
