@@ -3,16 +3,6 @@
     name: firewalld
     state: present
 
-- name: "Disable ip[6]tables services"
-  service:
-    name: "{{ item }}"
-    enabled: no
-    state: stopped
-  ignore_errors: yes
-  loop:
-    - iptables
-    - ip6tables
-
 - name: "Enable firewalld"
   service:
     name: firewalld
