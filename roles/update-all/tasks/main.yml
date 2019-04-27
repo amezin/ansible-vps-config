@@ -19,7 +19,8 @@
 
 - name: "Wait for host to become active"
   when: reboot_required.changed
-  wait_for_connection: {}
+  wait_for_connection:
+    delay: 5
 
 - name: "Check if services need to be restarted"
   when: updated.changed
