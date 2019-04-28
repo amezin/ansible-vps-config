@@ -1,17 +1,24 @@
-- name: EPEL repo
-  package:
-    name: epel-release
-    state: present
+- name: "fail2ban-server-{{ fail2ban_rpm_version }}.noarch.rpm"
+  copy:
+    src: "fail2ban-server-{{ fail2ban_rpm_version }}.noarch.rpm"
+    dest: /tmp/
 
 - name: fail2ban-server
   package:
-    name: fail2ban-server
+    name: "/tmp/fail2ban-server-{{ fail2ban_rpm_version }}.noarch.rpm"
     state: present
+
+- name: "fail2ban-systemd-{{ fail2ban_rpm_version }}.noarch.rpm"
+  copy:
+    src: "fail2ban-systemd-{{ fail2ban_rpm_version }}.noarch.rpm"
+    dest: /tmp/
 
 - name: fail2ban-systemd
   package:
-    name: fail2ban-systemd
+    name: "/tmp/fail2ban-systemd-{{ fail2ban_rpm_version }}.noarch.rpm"
     state: present
+  notify:
+    - reload fail2ban
 
 - name: /etc/fail2ban/jail.local
   template:

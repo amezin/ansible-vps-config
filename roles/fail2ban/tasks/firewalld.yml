@@ -1,6 +1,11 @@
+- name: "fail2ban-firewalld-{{ fail2ban_rpm_version }}.noarch.rpm"
+  copy:
+    src: "fail2ban-firewalld-{{ fail2ban_rpm_version }}.noarch.rpm"
+    dest: /tmp/
+
 - name: fail2ban-firewalld
   package:
-    name: fail2ban-firewalld
+    name: "/tmp/fail2ban-firewalld-{{ fail2ban_rpm_version }}.noarch.rpm"
     state: present
   notify:
     - reload fail2ban
