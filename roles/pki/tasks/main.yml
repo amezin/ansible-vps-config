@@ -1,0 +1,44 @@
+- name: "EPEL repo"
+  package:
+    name: epel-release
+    state: present
+
+- name: "Install easy-rsa"
+  package:
+    name: easy-rsa
+    state: present
+
+- name: "{{ easyrsa_dir }}"
+  file:
+    path: "{{ easyrsa_dir }}"
+    state: directory
+
+- name: "easy-rsa init-pki"
+  shell: "{{ easyrsa_cmd }} init-pki"
+  args:
+    chdir: "{{ easyrsa_dir }}"
+    creates: "{{ easyrsa_pki_dir }}"
+
+- name: "easy-rsa build-ca"
+  shell: "{{ easyrsa_cmd }} --batch build-ca nopass"
+  args:
+    chdir: "{{ easyrsa_dir }}"
+    creates: "{{ easyrsa_ca_crt }}"
+
+- name: "easy-rsa build-server-full"
+  shell: "{{ easyrsa_cmd }} --batch build-server-full server nopass"
+  args:
+    chdir: "{{ easyrsa_dir }}"
+    creates: "{{ easyrsa_server_key }}"
+
+- name: "easy-rsa gen-dh"
+  shell: "{{ easyrsa_cmd }} --batch gen-dh"
+  args:
+    chdir: "{{ easyrsa_dir }}"
+    creates: "{{ easyrsa_dh_pem }}"
+
+- name: "easy-rsa build-client-full"
+  shell: "{{ easyrsa_cmd }} --batch build-client-full client nopass"
+  args:
+    chdir: "{{ easyrsa_dir }}"
+    creates: "{{ easyrsa_client_key }}"

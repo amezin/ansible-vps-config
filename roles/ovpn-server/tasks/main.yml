@@ -3,13 +3,10 @@
     name: epel-release
     state: present
 
-- name: "Install openvpn and easy-rsa"
+- name: "Install openvpn"
   package:
-    name: "{{ item }}"
+    name: openvpn
     state: present
-  loop:
-    - openvpn
-    - easy-rsa
 
 - name: "Setup firewalld"
   import_tasks: firewalld.yml
@@ -17,41 +14,6 @@
 - name: "Setup selinux"
   when: ansible_selinux and ansible_selinux.status == 'enabled'
   import_tasks: selinux.yml
-
-- name: "{{ easyrsa_dir }}"
-  file:
-    path: "{{ easyrsa_dir }}"
-    state: directory
-
-- name: "easy-rsa init-pki"
-  shell: "{{ easyrsa_cmd }} init-pki"
-  args:
-    chdir: "{{ easyrsa_dir }}"
-    creates: "{{ easyrsa_pki_dir }}"
-
-- name: "easy-rsa build-ca"
-  shell: "{{ easyrsa_cmd }} --batch build-ca nopass"
-  args:
-    chdir: "{{ easyrsa_dir }}"
-    creates: "{{ easyrsa_ca_crt }}"
-  notify:
-    - restart openvpn server
-
-- name: "easy-rsa build-server-full"
-  shell: "{{ easyrsa_cmd }} --batch build-server-full server nopass"
-  args:
-    chdir: "{{ easyrsa_dir }}"
-    creates: "{{ easyrsa_server_key }}"
-  notify:
-    - restart openvpn server
-
-- name: "easy-rsa gen-dh"
-  shell: "{{ easyrsa_cmd }} --batch gen-dh"
-  args:
-    chdir: "{{ easyrsa_dir }}"
-    creates: "{{ easyrsa_dh_pem }}"
-  notify:
-    - restart openvpn server
 
 - name: "{{ openvpn_tls_key }}"
   shell: "openvpn --genkey --secret {{ openvpn_tls_key }}"
@@ -72,12 +34,6 @@
     name: openvpn@server
     enabled: yes
     state: started
-
-- name: "easy-rsa build-client-full"
-  shell: "{{ easyrsa_cmd }} --batch build-client-full client nopass"
-  args:
-    chdir: "{{ easyrsa_dir }}"
-    creates: "{{ easyrsa_client_key }}"
 
 - name: "read {{ easyrsa_ca_crt }}"
   slurp:
